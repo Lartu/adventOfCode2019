@@ -1,3 +1,5 @@
+![Advent LDPL](images/advent.png)
+
 # Advent of Code 2019 - LDPL
 
 This repo contains my solutions for [Advent of Code 2019](https://adventofcode.com/2019) written in

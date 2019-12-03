@@ -39,3 +39,7 @@ Days completed:
  * `Day 23`
  * `Day 24`
  * `Day 25`
+ 
+ ## License
+ 
+All LDPL Dinosaur logos where created by [Martín del Río](https://lartu.net) and are released under a Creative Commons Attribution 4.0 International (CC BY 4.0) license.

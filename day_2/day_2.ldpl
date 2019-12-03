@@ -1,0 +1,78 @@
+data:
+code is text
+_result is number
+_n is number
+_v is number
+
+procedure:
+load file "input" in code
+sub ejecutar_intcode
+parameters:
+    noun is number
+    verb is number
+    result is number
+local data:
+    opcodes is text list
+    op1 is number
+    op2 is number
+    res is number
+    opcode_count is number
+    i is number
+    indexA is number
+    indexB is number
+    indexRes is number
+
+procedure:
+split code by "," in opcodes
+get length of opcodes in opcode_count
+store noun in opcodes:1
+store verb in opcodes:2
+while 1 is equal to 1 do
+    trim opcodes:i in opcodes:i
+    if opcodes:i is equal to "1" then        
+        in i solve i + 1
+        store opcodes:i in indexA
+        in i solve i + 1
+        store opcodes:i in indexB
+        in i solve i + 1
+        store opcodes:i in indexRes
+        store opcodes:indexA in op1
+        store opcodes:indexB in op2
+        in res solve op1 + op2
+        #display op1 "(" indexA "), " op2 "(" indexB ") -> " res "(" indexRes ")" crlf
+        store res in opcodes:indexRes
+        in i solve i + 1
+    else if opcodes:i is equal to "2" then        
+        in i solve i + 1
+        store opcodes:i in indexA
+        in i solve i + 1
+        store opcodes:i in indexB
+        in i solve i + 1
+        store opcodes:i in indexRes
+        store opcodes:indexA in op1
+        store opcodes:indexB in op2
+        in res solve op1 * op2
+        #display op1 "(" indexA "), " op2 "(" indexB ") -> " res "(" indexRes ")" crlf
+        store res in opcodes:indexRes
+        in i solve i + 1
+    else
+        #display "Halted" crlf
+        break
+    end if
+repeat
+store opcodes:0 in result
+end sub
+
+call ejecutar_intcode with 12 2 _result
+display "Puzzle 1: " _result crlf
+
+for _n from 0 to 99 step 1 do
+    for _v from 0 to 99 step 1 do
+        call ejecutar_intcode with _n _v _result
+        if _result is equal to 19690720 then
+            in _result solve 100 * _n + _v
+            display "Puzzle 2: " _result crlf
+            exit
+        end if
+    repeat
+repeat

@@ -1,0 +1,45 @@
+# https://adventofcode.com/2019/day/1
+data:
+input               is text
+module_masses       is text list
+module_mass_text    is text
+module_mass         is number
+result              is number
+total_fuel          is number
+
+procedure:
+sub find_fuel_required
+parameters:
+    mass is number
+    result is number
+procedure:
+    in result solve mass / 3
+    floor result
+    in result solve result - 2
+end sub
+
+load file "input" in input
+split input by "\n" in module_masses
+for each module_mass_text in module_masses do
+    if module_mass_text is not equal to "" then
+        store module_mass_text in module_mass
+        call find_fuel_required with module_mass result
+        in total_fuel solve total_fuel + result
+    end if
+repeat
+
+display "Puzzle 1: " total_fuel crlf
+
+store 0 in total_fuel
+for each module_mass_text in module_masses do
+    store module_mass_text in module_mass
+    while module_mass is greater than 0 do
+        call find_fuel_required with module_mass result
+        if result is greater than 0 then
+            in total_fuel solve total_fuel + result
+        end if
+        store result in module_mass
+    repeat
+repeat
+
+display "Puzzle 2: " total_fuel crlf

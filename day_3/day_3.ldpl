@@ -1,0 +1,137 @@
+#https://adventofcode.com/2019/day/3
+
+using package std-list
+using package std-math
+
+data:
+    # --- Input data ---
+    input_text      is text
+    wire_data       is list of text
+    wire0_data      is list of text
+    wire1_data      is list of text
+    
+    # --- Procedure data ---
+    next_command    is text
+    
+    # --- Location data ---
+    locations       is map of text
+    x               is list of numbers
+    y               is list of numbers
+    cross_locs      is list of lists of numbers
+    
+procedure:
+    # --- Load data ---
+    load file "input" in input_text
+    split input_text by "\n" in wire_data
+    split wire_data:0 by "," in wire0_data
+    split wire_data:1 by "," in wire1_data
+    
+    # --- Initialize wire locations ---
+    push 0 to x
+    push 0 to x
+    push 0 to y
+    push 0 to y
+    
+    # --- Trace each wire ---
+    for each next_command in wire0_data do
+        call move_wire with 0 next_command
+    repeat
+    for each next_command in wire1_data do
+        call move_wire with 1 next_command
+    repeat
+    
+    # --- Find the closest intersection ---
+    call find_closest_int
+    
+    # --- Sub procedure that marks the locations where wires are ---
+    sub move_wire
+    parameters:
+        wire_number is number
+        raw_command is text
+    local data:
+        command     is text
+        count_t     is text
+        count       is number
+        x_delta     is number
+        y_delta     is number
+        coordinate  is text
+        i           is number
+        wire_index0 is number
+        wire_index1 is number
+        list_len    is number
+    procedure:
+        # --- Parse the command ---
+        get character at 0 from raw_command in command
+        substring raw_command from 1 length 10 in count_t
+        store count_t in count
+        
+        # --- Get the movement delta ---
+        if command is equal to "U" then
+            store 1 in y_delta
+        else if command is equal to "D" then
+            store -1 in y_delta
+        else if command is equal to "L" then
+            store -1 in x_delta
+        else
+            store 1 in x_delta
+        end if
+        
+        display wire_number ") " raw_command " -> " command " " x_delta " " y_delta " " count crlf
+        
+        # --- Add deltas to wire location ---
+        for i from 0 to count step 1 do
+            in x:wire_number solve x:wire_number + x_delta
+            in y:wire_number solve y:wire_number + y_delta
+            in coordinate join x:wire_number ":" y:wire_number
+            
+            # --- If we are checking the second wire, check for crossings ---
+            if wire_number is equal to 1 then
+                get index of "0" from locations:coordinate in wire_index0
+                get index of "1" from locations:coordinate in wire_index1
+                # Just add crossings that we haven't found yet
+                if wire_index0 is not equal to -1 and wire_index1 is equal to -1 then
+                    get length of cross_locs in list_len
+                    push list to cross_locs
+                    push x:wire_number to cross_locs:list_len
+                    push y:wire_number to cross_locs:list_len
+                    display "Crossing: " locations:coordinate " > " coordinate crlf
+                end if
+            end if
+            
+            # --- Mark this location as visited ---
+            in locations:coordinate join locations:coordinate wire_number
+        repeat
+    end sub
+    
+    # --- Sub procedure that finds the crossing closest to the origin ---
+    sub find_closest_int
+    local data:
+        min_x   is number
+        min_y   is number
+        coord   is list of numbers
+        abs_x   is number
+        abs_y   is number
+        distC   is number
+        distM   is number
+    procedure:
+        for each coord in cross_locs do
+            in distM solve min_x + min_y
+            abs distM
+            store coord:0 in abs_x
+            store coord:1 in abs_y
+            abs abs_x
+            abs abs_y
+            in distC solve abs_x + abs_y
+            abs distC
+            if distM is equal to 0 or distC is less than distM then
+                store coord:0 in min_x
+                store coord:1 in min_y
+                abs min_x
+                abs min_y
+            end if
+        repeat
+        in distM solve min_x + min_y
+        abs distM
+        display "Problem 1 solution: " distM " (" min_x ", " min_y ")" crlf
+    end sub
+    

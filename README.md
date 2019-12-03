@@ -7,3 +7,6 @@ is a little cleaner.
 Programmed for **LDPL 4.4**, won't
 work in previous versions of the language.
 
+Packages required:
+ * **std-list** (`lpm install std-list`)
+ * **std-math** (`lpm install std-math`)

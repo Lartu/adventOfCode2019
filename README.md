@@ -1,4 +1,4 @@
-![Advent LDPL](images/advent.png)
+![Advent LDPL](images/advent_logo.png)
 
 # Advent of Code 2019 - LDPL
 

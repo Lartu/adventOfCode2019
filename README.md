@@ -13,32 +13,35 @@ Packages required:
  * **std-list** (`lpm install std-list`)
  * **std-math** (`lpm install std-math`)
 
-Days completed:
- * `Day 01 ⭐ ⭐`
- * `Day 02 ⭐ ⭐`
- * `Day 03 ⭐ ⭐`
- * `Day 04`
- * `Day 05`
- * `Day 06`
- * `Day 07`
- * `Day 08`
- * `Day 09`
- * `Day 10`
- * `Day 11`
- * `Day 12`
- * `Day 13`
- * `Day 14`
- * `Day 15`
- * `Day 16`
- * `Day 17`
- * `Day 18`
- * `Day 19`
- * `Day 20`
- * `Day 21`
- * `Day 22`
- * `Day 23`
- * `Day 24`
- * `Day 25`
+## Days completed
+
+| Day | Problem 1 | Problem 2 |
+|:---:|:---:|:---:|
+| 1 | ⭐ | ⭐ |
+| 2 | ⭐ | ⭐ |
+| 3 | ⭐ | ⭐ |
+| 4 |  |  |
+| 5 |  |  |
+| 6 |  |  |
+| 7 |  |  |
+| 8 |  |  |
+| 9 |  |  |
+| 10 |  |  |
+| 11 |  |  |
+| 12 |  |  |
+| 13 |  |  |
+| 14 |  |  |
+| 15 |  |  |
+| 16 |  |  |
+| 17 |  |  |
+| 18 |  |  |
+| 19 |  |  |
+| 20 |  |  |
+| 21 |  |  |
+| 22 |  |  |
+| 23 |  |  |
+| 24 |  |  |
+| 25 |  |  |
  
  ## License
  

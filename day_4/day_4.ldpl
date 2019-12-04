@@ -1,0 +1,78 @@
+# Passwords that meet the criteria:
+# 6 digit numbers
+# in range [130254, 678275]
+# two adjacent digits are the same (22 in 122345)
+# digits only increase or stay the same
+
+data:
+    potential_pass      is number
+    check               is number
+    pass_count          is number
+    
+procedure:
+    for potential_pass from 130254 to 678275 step 1 do
+        call adjacent_check with potential_pass check
+        if check is equal to 1 then
+            call increase_check with potential_pass check
+            if check is equal to 1 then
+                in pass_count solve pass_count + 1
+                display potential_pass " is a potential pass." crlf
+            end if
+        end if
+    repeat
+    
+    display "There are " pass_count " potential passes." crlf
+    
+    # --- Check for adjacent numbers ---    
+    sub adjacent_check
+    parameters:
+        n               is number
+        check           is number
+    local data:
+        number_text     is text
+        i               is number
+        iminus          is number
+        previous_char   is text
+        current_char    is text
+    procedure:
+        store n in number_text
+        for i from 1 to 6 step 1 do
+            in iminus solve i - 1
+            get character at iminus from number_text in previous_char
+            get character at i from number_text in current_char
+            if previous_char is equal to current_char then
+                store 1 in check
+                return
+            end if
+        repeat
+        store 0 in check
+    end sub
+    
+    # --- Check for increasing numbers ---
+    sub increase_check
+    parameters:
+        n               is number
+        check           is number
+    local data:
+        number_text     is text
+        i               is number
+        iminus          is number
+        previous_char   is text
+        current_char    is text
+        previous_num    is number
+        current_num     is number
+    procedure:
+        store n in number_text
+        for i from 1 to 6 step 1 do
+            in iminus solve i - 1
+            get character at iminus from number_text in previous_char
+            get character at i from number_text in current_char
+            store previous_char in previous_num
+            store current_char in current_num
+            if previous_num is greater than current_num then
+                store 0 in check
+                return
+            end if
+        repeat
+        store 1 in check
+    end sub

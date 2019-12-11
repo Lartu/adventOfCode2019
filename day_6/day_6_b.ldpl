@@ -1,0 +1,86 @@
+using package std-list
+
+data:
+input is text
+input_lines is list of text
+orbits is map of text
+objects is list of text
+ancestor_list_you is list of text
+ancestor_list_san is list of text
+common_ancestor is text
+transfer_count_you is number
+transfer_count_san is number
+total_transfers is number
+
+procedure:
+sub parse_orbits
+local data:
+    line is text
+    tokens is list of text
+procedure:
+    delete last element of input_lines
+    for each line in input_lines do
+        split line by ")" in tokens
+        store tokens:0 in orbits:tokens:1
+        # orbits[tokens:0] is the object tokens:1 orbits around
+        push tokens:1 to objects
+    repeat
+end sub
+
+sub get_ancestors
+parameters:
+    object is text
+    ancestor_list is list of text
+procedure:
+    if object is equal to "COM" then
+        return
+    else
+        push orbits:object to ancestor_list
+        call get_ancestors with orbits:object ancestor_list
+    end if
+end sub
+
+sub find_first_element_in_common
+parameters:
+    list1 is list of text
+    list2 is list of text
+    element is text
+local data:
+    elem1 is text
+    elem2 is text
+procedure:
+    for each elem1 in list1 do
+        for each elem2 in list2 do
+            if elem1 is equal to elem2 then
+                store elem1 in element
+                return
+            end if
+        repeat
+    repeat
+end sub
+
+sub count_recursive_orbits_until
+parameters:
+    object is text
+    count is number
+    until is text
+procedure:
+    if object is equal to until then
+        store 0 in count
+    else
+        call count_recursive_orbits_until with orbits:object count until
+        in count solve count + 1
+    end if
+end sub
+
+load file "input" in input
+split input by "\n" in input_lines
+call parse_orbits
+call get_ancestors with "YOU" ancestor_list_you
+call get_ancestors with "SAN" ancestor_list_san
+call find_first_element_in_common with ancestor_list_you ancestor_list_san common_ancestor
+call count_recursive_orbits_until with "YOU" transfer_count_you common_ancestor
+call count_recursive_orbits_until with "SAN" transfer_count_san common_ancestor
+in total_transfers solve transfer_count_you + transfer_count_san - 2
+display "Total orbital transfers: " total_transfers lf
+

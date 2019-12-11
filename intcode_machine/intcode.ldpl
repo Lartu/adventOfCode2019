@@ -1,0 +1,434 @@
+using package std-list
+
+data:
+code is text
+_n is number
+_v is number
+
+procedure:
+load file argv:0 in code
+
+call execute_intcode
+
+#for _n from 0 to 99 step 1 do
+#    for _v from 0 to 99 step 1 do
+#        call execute_intcode with _n _v _result
+#        if _result is equal to 19690720 then
+#            in _result solve 100 * _n + _v
+#            #display "Puzzle 2: " _result crlf
+#            exit
+#        end if
+#    repeat
+#repeat
+
+# --- Sub that interprets IntCode ---
+sub execute_intcode
+    local data:
+        opcodes is text list
+        op1 is number
+        op2 is number
+        res is number
+        opcode_count is number
+        i is number
+        indexA is number
+        indexB is number
+        indexRes is number
+        par_modes is text list
+        orig_opcode is text
+        opc_len is number
+        auxA is number
+        auxB is number
+        char is text
+        opcode_parsed is text
+        mode is number
+        par_len is number
+    procedure:
+        # --- Get all code tokens ---
+        split code by "," in opcodes
+        get length of opcodes in opcode_count
+        
+        # --- For each token ---
+        while 1 is equal to 1 do
+            clear par_modes
+            # --- Trim the opcode and get its parameter modes ---
+            trim opcodes:i in orig_opcode
+            get length of orig_opcode in opc_len
+            in auxA solve opc_len - 1
+            in auxB solve opc_len - 2
+            # -> Get the opcode
+            if opc_len is greater than 1 then
+                get character at auxB from orig_opcode in char
+                substring orig_opcode from auxB length 2 in opcode_parsed
+                substring orig_opcode from 0 length auxB in orig_opcode
+                # -> Get every parameter
+                while 1 is equal to 1 do
+                    get length of orig_opcode in opc_len
+                    if opc_len is greater than 0 then
+                        in auxA solve opc_len - 1
+                        get character at auxA from orig_opcode in char
+                        substring orig_opcode from 0 length auxA in orig_opcode
+                        push char to par_modes
+                    else
+                        break
+                    end if
+                repeat
+            else
+                store orig_opcode in opcode_parsed
+            end if
+            #display "Original opcode: " opcodes:i " -> " opcode_parsed " (index " i ")" crlf
+            #display "  Parameters: "
+            for each char in par_modes do
+                #display char " "
+            repeat
+            #display crlf
+            
+            # --- Remove trailing 0s ---
+            store opcode_parsed in op1
+            store op1 in opcode_parsed
+            
+            # --- Execute the opcode ---
+            # ADD
+            if opcode_parsed is equal to "1" then    
+                #display "  ADD "
+                # --- First operand    
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in indexA
+                    trim opcodes:indexA in opcodes:indexA
+                    store opcodes:indexA in op1
+                    #display "pos "
+                else
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in op1
+                end if
+                # --- Second operand
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in indexB
+                    trim opcodes:indexB in opcodes:indexB
+                    store opcodes:indexB in op2
+                    #display "pos "
+                else
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in op2
+                    #display "imm "
+                end if
+                # --- Result operand
+                in i solve i + 1
+                trim opcodes:i in opcodes:i
+                store opcodes:i in indexRes
+                # --- Execute
+                in res solve op1 + op2
+                #display crlf "  " op1 "(" indexA "), " op2 "(" indexB ") -> " res "(" indexRes ")" crlf
+                store res in opcodes:indexRes
+                in i solve i + 1
+                
+            # MUL
+            else if opcode_parsed is equal to "2" then        
+                #display "  ADD "
+                # --- First operand    
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in indexA
+                    trim opcodes:indexA in opcodes:indexA
+                    store opcodes:indexA in op1
+                    #display "pos "
+                else
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in op1
+                end if
+                # --- Second operand
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in indexB
+                    trim opcodes:indexB in opcodes:indexB
+                    store opcodes:indexB in op2
+                    #display "pos "
+                else
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in op2
+                    #display "imm "
+                end if
+                # --- Result operand
+                in i solve i + 1
+                trim opcodes:i in opcodes:i
+                store opcodes:i in indexRes
+                # --- Execute
+                in res solve op1 * op2
+                #display crlf "  " op1 "(" indexA "), " op2 "(" indexB ") -> " res "(" indexRes ")" crlf
+                store res in opcodes:indexRes
+                in i solve i + 1
+                
+            # ACCEPT
+            else if opcode_parsed is equal to "3" then
+                accept op1
+                # --- Result operand
+                in i solve i + 1
+                trim opcodes:i in opcodes:i
+                store opcodes:i in indexRes
+                # --- Execute
+                in res solve op1
+                #display crlf "  " op1 " -> " res "(" indexRes ")" crlf
+                store res in opcodes:indexRes
+                in i solve i + 1
+                
+            # PRINT
+            else if opcode_parsed is equal to "4" then        
+                #display "  PRINT "
+                # --- First operand    
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in indexA
+                    trim opcodes:indexA in opcodes:indexA
+                    store opcodes:indexA in op1
+                    #display "pos "
+                else
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in op1
+                end if
+                in i solve i + 1
+                display op1 crlf
+                
+            # JIT
+            else if opcode_parsed is equal to "5" then        
+                #display "  JIF "
+                # --- First operand    
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in indexA
+                    trim opcodes:indexA in opcodes:indexA
+                    store opcodes:indexA in op1
+                    #display "pos "
+                else
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in op1
+                end if
+                # --- Second operand
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in indexB
+                    trim opcodes:indexB in opcodes:indexB
+                    store opcodes:indexB in op2
+                    #display "pos "
+                else
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in op2
+                    #display "imm "
+                end if
+                
+                # --- Execute
+                if op1 is not equal to 0 then
+                    store op2 in i
+                else
+                    in i solve i + 1
+                end if
+            
+            # JIF
+            else if opcode_parsed is equal to "6" then        
+                #display "  JIF "
+                # --- First operand    
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in indexA
+                    trim opcodes:indexA in opcodes:indexA
+                    store opcodes:indexA in op1
+                    #display "pos "
+                else
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in op1
+                end if
+                # --- Second operand
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in indexB
+                    trim opcodes:indexB in opcodes:indexB
+                    store opcodes:indexB in op2
+                    #display "pos "
+                else
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in op2
+                    #display "imm "
+                end if
+                
+                # --- Execute
+                if op1 is equal to 0 then
+                    store op2 in i
+                else
+                    in i solve i + 1
+                end if
+                
+            # LT
+            else if opcode_parsed is equal to "7" then        
+                #display "  LT "
+                # --- First operand    
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in indexA
+                    trim opcodes:indexA in opcodes:indexA
+                    store opcodes:indexA in op1
+                    #display "pos "
+                else
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in op1
+                end if
+                # --- Second operand
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in indexB
+                    trim opcodes:indexB in opcodes:indexB
+                    store opcodes:indexB in op2
+                    #display "pos "
+                else
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in op2
+                    #display "imm "
+                end if
+                # --- Result operand
+                in i solve i + 1
+                trim opcodes:i in opcodes:i
+                store opcodes:i in indexRes
+                # --- Execute
+                if op1 is less than op2 then
+                    store 1 in res
+                else
+                    store 0 in res
+                end if
+                store res in opcodes:indexRes
+                in i solve i + 1
+            
+            # EQ
+            else if opcode_parsed is equal to "8" then        
+                #display "  EQ "
+                # --- First operand    
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in indexA
+                    trim opcodes:indexA in opcodes:indexA
+                    store opcodes:indexA in op1
+                    #display "pos "
+                else
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in op1
+                end if
+                # --- Second operand
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in indexB
+                    trim opcodes:indexB in opcodes:indexB
+                    store opcodes:indexB in op2
+                    #display "pos "
+                else
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in op2
+                    #display "imm "
+                end if
+                # --- Result operand
+                in i solve i + 1
+                trim opcodes:i in opcodes:i
+                store opcodes:i in indexRes
+                # --- Execute
+                if op1 is equal to op2 then
+                    store 1 in res
+                else
+                    store 0 in res
+                end if
+                store res in opcodes:indexRes
+                in i solve i + 1
+                
+            else
+                #display "  HLT" crlf
+                break
+            end if
+        repeat
+end sub

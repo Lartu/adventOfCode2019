@@ -1,0 +1,45 @@
+data:
+input is text
+input_lines is list of text
+orbits is map of text
+objects is list of text
+object is text
+count is number
+total_count is number
+
+procedure:
+sub parse_orbits
+local data:
+    line is text
+    tokens is list of text
+procedure:
+    delete last element of input_lines
+    for each line in input_lines do
+        split line by ")" in tokens
+        store tokens:0 in orbits:tokens:1
+        # orbits[tokens:0] is the object tokens:1 orbits around
+        push tokens:1 to objects
+    repeat
+end sub
+
+sub count_recursive_orbits
+parameters:
+    object is text
+    count is number
+procedure:
+    if object is equal to "COM" then
+        store 0 in count
+    else
+        call count_recursive_orbits with orbits:object count
+        in count solve count + 1
+    end if
+end sub
+
+load file "input" in input
+split input by "\n" in input_lines
+call parse_orbits
+for each object in objects do
+    call count_recursive_orbits with object count
+    in total_count solve total_count + count
+repeat
+display "Total orbits: " total_count lf

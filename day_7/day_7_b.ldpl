@@ -1,0 +1,537 @@
+# This code is awful, I'm sorry, I'm too tired for this stuff.
+
+using package std-list
+
+data:
+code is text
+a is number
+b is number
+c is number
+d is number
+e is number
+auxtx is text
+command is text
+total is number
+max_total is number
+max_config is text
+buffers is list of lists of text
+states is list of lists of text
+opcodes is list of text
+halted is number
+ip is list of numbers
+
+procedure:
+
+load file "input" in code
+split code by "," in opcodes
+
+for a from 5 to 10 step 1 do
+    for b from 5 to 10 step 1 do
+        for c from 5 to 10 step 1 do
+            for d from 5 to 10 step 1 do
+                for e from 5 to 10 step 1 do
+                    if a is equal to b or a is equal to c or a is equal to d or a is equal to e then
+                        continue
+                    end if
+                    if b is equal to c or b is equal to d or b is equal to e then
+                        continue
+                    end if
+                    if c is equal to d or c is equal to e then
+                        continue
+                    end if
+                    if d is equal to e then
+                        continue
+                    end if
+                    
+                    clear buffers
+                    clear states
+                    clear ip
+                    
+                    push list to buffers
+                    push list to buffers
+                    push list to buffers
+                    push list to buffers
+                    push list to buffers
+
+                    push list to states
+                    push list to states
+                    push list to states
+                    push list to states
+                    push list to states
+
+                    copy opcodes to states:0
+                    copy opcodes to states:1
+                    copy opcodes to states:2
+                    copy opcodes to states:3
+                    copy opcodes to states:4
+                    
+                    store a in auxtx
+                    push auxtx to buffers:0
+                    store b in auxtx
+                    push auxtx to buffers:1
+                    store c in auxtx
+                    push auxtx to buffers:2
+                    store d in auxtx
+                    push auxtx to buffers:3
+                    store e in auxtx
+                    push auxtx to buffers:4
+                    
+                    push 0 to ip
+                    push 0 to ip
+                    push 0 to ip
+                    push 0 to ip
+                    push 0 to ip
+                    
+                    display "Input: " a "," b "," c "," d "," e crlf
+                    push "0" to buffers:0
+                    store 0 in halted
+                    display "Iterating for " a b c d e "... " crlf
+                    while halted is equal to 0 do
+                        call execute_intcode with a 0 ip:0
+                        call execute_intcode with b 1 ip:1
+                        call execute_intcode with c 2 ip:2
+                        call execute_intcode with d 3 ip:3
+                        call execute_intcode with e 4 ip:4
+                    repeat
+                    display "Done." crlf
+                    store buffers:0:0 in total
+                    display list buffers:0
+                    display "Total: " total crlf
+                    if total is greater than max_total then
+                        store total in max_total
+                        in max_config join a b c d e
+                    end if
+                repeat
+            repeat
+        repeat
+    repeat
+repeat
+
+display "Max total: " max_total crlf
+display "Max config: " max_config crlf
+
+sub execute_intcode
+    parameters:
+        config is number
+        index is number
+        i is number
+    local data:
+        code is text
+        op1 is number
+        op2 is number
+        res is number
+        opcode_count is number
+        indexA is number
+        indexB is number
+        indexRes is number
+        par_modes is text list
+        orig_opcode is text
+        opc_len is number
+        auxA is number
+        auxB is number
+        char is text
+        opcode_parsed is text
+        mode is number
+        par_len is number
+        next_buffer is number
+        buffer_text is text
+        buffer_len is number
+    procedure:
+        display "Executing amplifier " index " with buffer "
+        display list buffers:index
+        get length of states:index in opcode_count
+        # --- For each token ---
+        while 1 is equal to 1 do
+            clear par_modes
+            # --- Trim the opcode and get its parameter modes ---
+            trim states:index:i in orig_opcode
+            get length of orig_opcode in opc_len
+            in auxA solve opc_len - 1
+            in auxB solve opc_len - 2
+            # -> Get the opcode
+            if opc_len is greater than 1 then
+                get character at auxB from orig_opcode in char
+                substring orig_opcode from auxB length 2 in opcode_parsed
+                substring orig_opcode from 0 length auxB in orig_opcode
+                # -> Get every parameter
+                while 1 is equal to 1 do
+                    get length of orig_opcode in opc_len
+                    if opc_len is greater than 0 then
+                        in auxA solve opc_len - 1
+                        get character at auxA from orig_opcode in char
+                        substring orig_opcode from 0 length auxA in orig_opcode
+                        push char to par_modes
+                    else
+                        break
+                    end if
+                repeat
+            else
+                store orig_opcode in opcode_parsed
+            end if
+            #display "Original opcode: " states:index:i " -> " opcode_parsed " (index " i ")" crlf
+            #display "  Parameters: "
+            for each char in par_modes do
+                #display char " "
+            repeat
+            #display crlf
+            
+            # --- Remove trailing 0s ---
+            store opcode_parsed in op1
+            store op1 in opcode_parsed
+            
+            # --- Execute the opcode ---
+            # ADD
+            if opcode_parsed is equal to "1" then    
+                #display "  ADD "
+                # --- First operand    
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim states:index:i in states:index:i
+                    store states:index:i in indexA
+                    trim states:index:indexA in states:index:indexA
+                    store states:index:indexA in op1
+                    #display "pos "
+                else
+                    trim states:index:i in states:index:i
+                    store states:index:i in op1
+                end if
+                # --- Second operand
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim states:index:i in states:index:i
+                    store states:index:i in indexB
+                    trim states:index:indexB in states:index:indexB
+                    store states:index:indexB in op2
+                    #display "pos "
+                else
+                    trim states:index:i in states:index:i
+                    store states:index:i in op2
+                    #display "imm "
+                end if
+                # --- Result operand
+                in i solve i + 1
+                trim states:index:i in states:index:i
+                store states:index:i in indexRes
+                # --- Execute
+                in res solve op1 + op2
+                #display crlf "  " op1 "(" indexA "), " op2 "(" indexB ") -> " res "(" indexRes ")" crlf
+                store res in states:index:indexRes
+                in i solve i + 1
+                
+            # MUL
+            else if opcode_parsed is equal to "2" then        
+                #display "  ADD "
+                # --- First operand    
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim states:index:i in states:index:i
+                    store states:index:i in indexA
+                    trim states:index:indexA in states:index:indexA
+                    store states:index:indexA in op1
+                    #display "pos "
+                else
+                    trim states:index:i in states:index:i
+                    store states:index:i in op1
+                end if
+                # --- Second operand
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim states:index:i in states:index:i
+                    store states:index:i in indexB
+                    trim states:index:indexB in states:index:indexB
+                    store states:index:indexB in op2
+                    #display "pos "
+                else
+                    trim states:index:i in states:index:i
+                    store states:index:i in op2
+                    #display "imm "
+                end if
+                # --- Result operand
+                in i solve i + 1
+                trim states:index:i in states:index:i
+                store states:index:i in indexRes
+                # --- Execute
+                in res solve op1 * op2
+                #display crlf "  " op1 "(" indexA "), " op2 "(" indexB ") -> " res "(" indexRes ")" crlf
+                store res in states:index:indexRes
+                in i solve i + 1
+                
+            # ACCEPT
+            else if opcode_parsed is equal to "3" then
+                get length of buffers:index in buffer_len
+                if buffer_len is greater than 0 then
+                    store buffers:index:0 in op1
+                    splice element 0 of list buffers:index
+                else
+                    return
+                end if
+                # --- Result operand
+                in i solve i + 1
+                trim states:index:i in states:index:i
+                store states:index:i in indexRes
+                # --- Execute
+                in res solve op1
+                #display crlf "  " op1 " -> " res "(" indexRes ")" crlf
+                store res in states:index:indexRes
+                in i solve i + 1
+                
+            # PRINT
+            else if opcode_parsed is equal to "4" then        
+                #display "  PRINT "
+                in next_buffer solve index + 1
+                modulo next_buffer by 5 in next_buffer
+                # --- First operand    
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim states:index:i in states:index:i
+                    store states:index:i in indexA
+                    trim states:index:indexA in states:index:indexA
+                    store states:index:indexA in op1
+                    #display "pos "
+                else
+                    trim states:index:i in states:index:i
+                    store states:index:i in op1
+                end if
+                in i solve i + 1
+                store op1 in buffer_text
+                push buffer_text to buffers:next_buffer
+                display "Stored value " buffer_text " from amplifier " index " in buffer of " next_buffer crlf
+            # JIT
+            else if opcode_parsed is equal to "5" then        
+                #display "  JIF "
+                # --- First operand    
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim states:index:i in states:index:i
+                    store states:index:i in indexA
+                    trim states:index:indexA in states:index:indexA
+                    store states:index:indexA in op1
+                    #display "pos "
+                else
+                    trim states:index:i in states:index:i
+                    store states:index:i in op1
+                end if
+                # --- Second operand
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim states:index:i in states:index:i
+                    store states:index:i in indexB
+                    trim states:index:indexB in states:index:indexB
+                    store states:index:indexB in op2
+                    #display "pos "
+                else
+                    trim states:index:i in states:index:i
+                    store states:index:i in op2
+                    #display "imm "
+                end if
+                
+                # --- Execute
+                if op1 is not equal to 0 then
+                    store op2 in i
+                else
+                    in i solve i + 1
+                end if
+            
+            # JIF
+            else if opcode_parsed is equal to "6" then        
+                #display "  JIF "
+                # --- First operand    
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim states:index:i in states:index:i
+                    store states:index:i in indexA
+                    trim states:index:indexA in states:index:indexA
+                    store states:index:indexA in op1
+                    #display "pos "
+                else
+                    trim states:index:i in states:index:i
+                    store states:index:i in op1
+                end if
+                # --- Second operand
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim states:index:i in states:index:i
+                    store states:index:i in indexB
+                    trim states:index:indexB in states:index:indexB
+                    store states:index:indexB in op2
+                    #display "pos "
+                else
+                    trim states:index:i in states:index:i
+                    store states:index:i in op2
+                    #display "imm "
+                end if
+                
+                # --- Execute
+                if op1 is equal to 0 then
+                    store op2 in i
+                else
+                    in i solve i + 1
+                end if
+                
+            # LT
+            else if opcode_parsed is equal to "7" then        
+                #display "  LT "
+                # --- First operand    
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim states:index:i in states:index:i
+                    store states:index:i in indexA
+                    trim states:index:indexA in states:index:indexA
+                    store states:index:indexA in op1
+                    #display "pos "
+                else
+                    trim states:index:i in states:index:i
+                    store states:index:i in op1
+                end if
+                # --- Second operand
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim states:index:i in states:index:i
+                    store states:index:i in indexB
+                    trim states:index:indexB in states:index:indexB
+                    store states:index:indexB in op2
+                    #display "pos "
+                else
+                    trim states:index:i in states:index:i
+                    store states:index:i in op2
+                    #display "imm "
+                end if
+                # --- Result operand
+                in i solve i + 1
+                trim states:index:i in states:index:i
+                store states:index:i in indexRes
+                # --- Execute
+                if op1 is less than op2 then
+                    store 1 in res
+                else
+                    store 0 in res
+                end if
+                store res in states:index:indexRes
+                in i solve i + 1
+            
+            # EQ
+            else if opcode_parsed is equal to "8" then        
+                #display "  EQ "
+                # --- First operand    
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim states:index:i in states:index:i
+                    store states:index:i in indexA
+                    trim states:index:indexA in states:index:indexA
+                    store states:index:indexA in op1
+                    #display "pos "
+                else
+                    trim states:index:i in states:index:i
+                    store states:index:i in op1
+                end if
+                # --- Second operand
+                in i solve i + 1
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim states:index:i in states:index:i
+                    store states:index:i in indexB
+                    trim states:index:indexB in states:index:indexB
+                    store states:index:indexB in op2
+                    #display "pos "
+                else
+                    trim states:index:i in states:index:i
+                    store states:index:i in op2
+                    #display "imm "
+                end if
+                # --- Result operand
+                in i solve i + 1
+                trim states:index:i in states:index:i
+                store states:index:i in indexRes
+                # --- Execute
+                if op1 is equal to op2 then
+                    store 1 in res
+                else
+                    store 0 in res
+                end if
+                store res in states:index:indexRes
+                in i solve i + 1
+                
+            else
+                display "  HLT (opcode " opcode_parsed ")" crlf
+                store 1 in halted
+                break
+            end if
+        repeat
+end sub

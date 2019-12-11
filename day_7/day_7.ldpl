@@ -1,0 +1,71 @@
+data:
+a is number
+b is number
+c is number
+d is number
+e is number
+partial_output is text
+command is text
+total is number
+max_total is number
+max_config is text
+
+procedure:
+execute "cd ../intcode_machine && ldpl intcode.ldpl -o=intcode-bin"
+for a from 0 to 5 step 1 do
+    for b from 0 to 5 step 1 do
+        for c from 0 to 5 step 1 do
+            for d from 0 to 5 step 1 do
+                for e from 0 to 5 step 1 do
+                    if a is equal to b or a is equal to c or a is equal to d or a is equal to e then
+                        continue
+                    end if
+                    if b is equal to c or b is equal to d or b is equal to e then
+                        continue
+                    end if
+                    if c is equal to d or c is equal to e then
+                        continue
+                    end if
+                    if d is equal to e then
+                        continue
+                    end if
+                    display "Input: " a "," b "," c "," d "," e crlf
+                    store "0" in partial_output
+                    in command join "printf \"%s\\n\" \"" a "\" \"" partial_output "\" | ../intcode_machine/intcode-bin ./input"
+                    display "Executing: " command crlf
+                    execute command and store output in partial_output
+                    trim partial_output in partial_output
+                    display a " -> " partial_output lf
+                    in command join "printf \"%s\\n\" \"" b "\" \"" partial_output "\" | ../intcode_machine/intcode-bin ./input"
+                    display "Executing: " command crlf
+                    execute command and store output in partial_output
+                    trim partial_output in partial_output
+                    display b " -> " partial_output lf
+                    in command join "printf \"%s\\n\" \"" c "\" \"" partial_output "\" | ../intcode_machine/intcode-bin ./input"
+                    display "Executing: " command crlf
+                    execute command and store output in partial_output
+                    trim partial_output in partial_output
+                    display c " -> " partial_output lf
+                    in command join "printf \"%s\\n\" \"" d "\" \"" partial_output "\" | ../intcode_machine/intcode-bin ./input"
+                    display "Executing: " command crlf
+                    execute command and store output in partial_output
+                    trim partial_output in partial_output
+                    display d " -> " partial_output lf
+                    in command join "printf \"%s\\n\" \"" e "\" \"" partial_output "\" | ../intcode_machine/intcode-bin ./input"
+                    display "Executing: " command crlf
+                    execute command and store output in partial_output
+                    trim partial_output in partial_output
+                    display e " -> " partial_output lf
+                    store partial_output in total
+                    if total is greater than max_total then
+                        store total in max_total
+                        in max_config join a b c d e
+                    end if
+                repeat
+            repeat
+        repeat
+    repeat
+repeat
+
+display "Max total: " max_total crlf
+display "Max config: " max_config crlf

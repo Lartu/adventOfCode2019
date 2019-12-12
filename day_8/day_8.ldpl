@@ -1,0 +1,92 @@
+data:
+    image_data is text
+    layers is list of lists of text
+    pixels_per_image is number
+    
+procedure:
+    # Load image data
+    load file "input" in image_data
+    in pixels_per_image solve 25 * 6
+    call fill_layers
+    call solve_multiplications
+    
+    # Fills each layer of the picture
+    sub fill_layers
+        local data:
+            data_length is number
+            index is number
+            pixel is text
+            pixel_count is number
+            list_index is number
+        procedure:
+            get length of image_data in data_length
+            push list to layers
+            for index from 0 to data_length step 1 do
+                get character at index from image_data in pixel
+                push pixel to layers:list_index
+                in pixel_count solve pixel_count + 1
+                if pixel_count is equal to pixels_per_image then
+                    in list_index solve list_index + 1
+                    store 0 in pixel_count
+                    push list to layers
+                end if
+            repeat
+            delete last element of layers
+    end sub
+    
+    # Counts how many <digit> a layer has
+    sub count_digits
+        parameters:
+            digit is text
+            layer_index is number
+            result is number
+        local data:
+            pixel is text
+        procedure:
+            store 0 in result
+            for each pixel in layers:layer_index do
+                if pixel is equal to digit then
+                    in result solve result + 1
+                end if
+            repeat
+    end sub
+    
+    # Finds the layer with the fewest 0s
+    sub find_fewest_layer
+        parameters:
+            result is number
+        local data:
+            index is number
+            layer_count is number
+            min_count is number
+            min_layer is number
+            cur_count is number
+        procedure:
+            store pixels_per_image in min_count
+            store -1 in min_layer
+            get length of layers in layer_count
+            for index from 0 to layer_count step 1 do
+                call count_digits with "0" index cur_count
+                if cur_count is less than min_count then
+                    store cur_count in min_count
+                    store index in min_layer
+                end if
+            repeat
+            store min_layer in result
+            display "Layer with the least 0s: " min_layer lf
+    end sub
+    
+    # Multiplies the number of 1 digits by the number of 2 digits
+    sub solve_multiplications
+        local data:
+            min_layer is number
+            1_count is number
+            2_count is number
+            result is number
+        procedure:
+            call find_fewest_layer with min_layer
+            call count_digits with "1" min_layer 1_count
+            call count_digits with "2" min_layer 2_count
+            in result solve 1_count * 2_count
+            display "The result is: " result lf
+    end sub

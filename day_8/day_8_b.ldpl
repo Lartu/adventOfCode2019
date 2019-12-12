@@ -1,0 +1,81 @@
+data:
+    image_data is text
+    layers is list of lists of text
+    pixels_per_image is number
+    image is map of text
+    
+procedure:
+    # Load image data
+    load file "input" in image_data
+    in pixels_per_image solve 25 * 6
+    call fill_layers
+    call decode_image
+    call display_image
+    
+    # Fills each layer of the picture
+    sub fill_layers
+        local data:
+            data_length is number
+            index is number
+            pixel is text
+            pixel_count is number
+            list_index is number
+        procedure:
+            get length of image_data in data_length
+            push list to layers
+            for index from 0 to data_length step 1 do
+                get character at index from image_data in pixel
+                push pixel to layers:list_index
+                in pixel_count solve pixel_count + 1
+                if pixel_count is equal to pixels_per_image then
+                    in list_index solve list_index + 1
+                    store 0 in pixel_count
+                    push list to layers
+                end if
+            repeat
+            delete last element of layers
+    end sub
+    
+    # Decode the image
+    sub decode_image
+        local data:
+            layer_index is number
+            layer_count is number
+            row is number
+            column is number
+            coordinate is number
+        procedure:
+            get length of layers in layer_count
+            for layer_index from 0 to layer_count step 1 do
+                for row from 0 to 6 step 1 do
+                    for column from 0 to 25 step 1 do
+                        in coordinate solve column + row * 25
+                        if image:coordinate is equal to "" or image:coordinate is equal to "2" then
+                            store layers:layer_index:coordinate in image:coordinate
+                        end if
+                    repeat
+                repeat
+            repeat
+    end sub
+    
+    # Displays the decoded image
+    sub display_image
+        local data:
+            row is number
+            column is number
+            coordinate is number
+        procedure:
+            for row from 0 to 6 step 1 do
+                for column from 0 to 25 step 1 do
+                    in coordinate solve column + row * 25
+                    if image:coordinate is equal to "1" then
+                        display "*"
+                    else if image:coordinate is equal to "0" then
+                        display " "
+                    else if image:coordinate is equal to "2" then
+                        display "T"
+                    end if
+                repeat
+                display lf
+            repeat
+    end sub

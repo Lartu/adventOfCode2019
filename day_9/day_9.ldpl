@@ -30,6 +30,7 @@ sub execute_intcode
         mode is number
         par_len is number
         relative_base is number
+        
     procedure:
         # --- Get all code tokens ---
         split code by "," in opcodes
@@ -67,7 +68,9 @@ sub execute_intcode
             else
                 store orig_opcode in opcode_parsed
             end if
-            display "Original opcode: " opcodes:i " -> " opcode_parsed " (index " i ")" crlf
+            display crlf
+            display "Original opcode: " opcodes:i " -> opc is " opcode_parsed " (index " i ")"
+            display " (relative base " relative_base ")" crlf
             display "  Parameters: "
             for each char in par_modes do
                 display char " "
@@ -81,7 +84,7 @@ sub execute_intcode
             # --- Execute the opcode ---
             # ADD
             if opcode_parsed is equal to "1" then    
-                #display "  ADD "
+                display "  ADD "
                 # --- First operand    
                 in i solve i + 1
                 get length of par_modes in par_len
@@ -95,16 +98,19 @@ sub execute_intcode
                     store opcodes:i in indexA
                     trim opcodes:indexA in opcodes:indexA
                     store opcodes:indexA in op1
-                    #display "pos "
+                    display "pos "
                 else if mode is equal to 1 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in op1
+                    store -1 in indexA
+                    display "imm "
                 else if mode is equal to 2 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in indexA
                     in indexA solve indexA + relative_base
                     trim opcodes:indexA in opcodes:indexA
                     store opcodes:indexA in op1
+                    display "off "
                 end if
                 # --- Second operand
                 in i solve i + 1
@@ -119,31 +125,46 @@ sub execute_intcode
                     store opcodes:i in indexB
                     trim opcodes:indexB in opcodes:indexB
                     store opcodes:indexB in op2
-                    #display "pos "
+                    display "pos "
                 else if mode is equal to 1 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in op2
-                    #display "imm "
+                    store -1 in indexB
+                    display "imm "
                 else if mode is equal to 2 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in indexB
                     in indexB solve indexB + relative_base
                     trim opcodes:indexB in opcodes:indexB
                     store opcodes:indexB in op2
+                    display "off "
                 end if
                 # --- Result operand
                 in i solve i + 1
-                trim opcodes:i in opcodes:i
-                store opcodes:i in indexRes
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in indexRes
+                    display "pos "
+                else if mode is equal to 2 then
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in indexRes
+                    in indexRes solve indexRes + relative_base
+                end if
                 # --- Execute
                 in res solve op1 + op2
-                #display crlf "  " op1 "(" indexA "), " op2 "(" indexB ") -> " res "(" indexRes ")" crlf
+                display crlf "  " op1 " (at " indexA ") + " op2 " (at " indexB ") = " res " (at " indexRes ")" crlf
                 store res in opcodes:indexRes
                 in i solve i + 1
                 
             # MUL
             else if opcode_parsed is equal to "2" then        
-                #display "  ADD "
+                display "  MUL "
                 # --- First operand    
                 in i solve i + 1
                 get length of par_modes in par_len
@@ -157,16 +178,18 @@ sub execute_intcode
                     store opcodes:i in indexA
                     trim opcodes:indexA in opcodes:indexA
                     store opcodes:indexA in op1
-                    #display "pos "
+                    display "pos "
                 else if mode is equal to 1 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in op1
+                    display "imm "
                 else if mode is equal to 2 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in indexA
                     in indexA solve indexA + relative_base
                     trim opcodes:indexA in opcodes:indexA
                     store opcodes:indexA in op1
+                    display "rel "
                 end if
                 # --- Second operand
                 in i solve i + 1
@@ -181,32 +204,46 @@ sub execute_intcode
                     store opcodes:i in indexB
                     trim opcodes:indexB in opcodes:indexB
                     store opcodes:indexB in op2
-                    #display "pos "
+                    display "pos "
                 else if mode is equal to 1 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in op2
-                    #display "imm "
+                    display "imm "
                 else if mode is equal to 2 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in indexB
                     in indexB solve indexB + relative_base
                     trim opcodes:indexB in opcodes:indexB
                     store opcodes:indexB in op2
+                    display "rel "
                 end if
                 # --- Result operand
                 in i solve i + 1
-                trim opcodes:i in opcodes:i
-                store opcodes:i in indexRes
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in indexRes
+                    display "pos "
+                else if mode is equal to 2 then
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in indexRes
+                    in indexRes solve indexRes + relative_base
+                end if
                 # --- Execute
                 in res solve op1 * op2
-                #display crlf "  " op1 "(" indexA "), " op2 "(" indexB ") -> " res "(" indexRes ")" crlf
+                display crlf "  " op1 " (at " indexA ") * " op2 " (at " indexB ") = " res " (at " indexRes ")" crlf
                 store res in opcodes:indexRes
                 in i solve i + 1
                 
             # ACCEPT
             else if opcode_parsed is equal to "3" then        
-                display "ACCEPT: "
-                accept op1
+                display "  ACCEPT: "
+                accept res
                 # --- First operand    
                 in i solve i + 1
                 get length of par_modes in par_len
@@ -218,32 +255,23 @@ sub execute_intcode
                 if mode is equal to 0 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in indexA
-                    trim opcodes:indexA in opcodes:indexA
-                    store opcodes:indexA in op1
-                    #display "pos "
-                else if mode is equal to 1 then
-                    trim opcodes:i in opcodes:i
-                    store opcodes:i in op1
                 else if mode is equal to 2 then
-                    display "Accepting in relative mode" lf
+                    display "  Accepting in relative mode" lf
                     trim opcodes:i in opcodes:i
                     store opcodes:i in indexA                    
-                    display "Index: " indexA lf             
-                    display "Relative Base: " relative_base lf
+                    display "  Index: " indexA lf             
+                    display "  Relative Base: " relative_base lf
                     in indexA solve indexA + relative_base                   
-                    display "Resulting index: " indexA lf
-                    trim opcodes:indexA in opcodes:indexA
-                    store opcodes:indexA in op1
+                    display "  Resulting index: " indexA lf
                 end if
                 # --- Execute
-                in res solve op1
-                #display crlf "  " op1 " -> " res "(" indexRes ")" crlf
-                store res in opcodes:indexRes
+                display "  Stored " res " into index " indexA crlf
+                store res in opcodes:indexA
                 in i solve i + 1
                 
             # PRINT
             else if opcode_parsed is equal to "4" then        
-                #display "  PRINT "
+                display "  PRINT "
                 # --- First operand    
                 in i solve i + 1
                 get length of par_modes in par_len
@@ -257,23 +285,26 @@ sub execute_intcode
                     store opcodes:i in indexA
                     trim opcodes:indexA in opcodes:indexA
                     store opcodes:indexA in op1
-                    #display "pos "
+                    display "pos "
                 else if mode is equal to 1 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in op1
+                    store -1 in indexA
+                    display "imm "
                 else if mode is equal to 2 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in indexA
                     in indexA solve indexA + relative_base
                     trim opcodes:indexA in opcodes:indexA
                     store opcodes:indexA in op1
+                    display "off "
                 end if
                 in i solve i + 1
-                display "VALUE: " op1 crlf
+                display crlf "  VALUE: " op1 " (at " indexA ")" crlf
                 
-            # JIT
+            # JUMP IF TRUE
             else if opcode_parsed is equal to "5" then        
-                #display "  JIF "
+                display "  JUMP IF TRUE "
                 # --- First operand    
                 in i solve i + 1
                 get length of par_modes in par_len
@@ -287,16 +318,18 @@ sub execute_intcode
                     store opcodes:i in indexA
                     trim opcodes:indexA in opcodes:indexA
                     store opcodes:indexA in op1
-                    #display "pos "
+                    display "pos "
                 else if mode is equal to 1 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in op1
+                    display "imm "
                 else if mode is equal to 2 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in indexA
                     in indexA solve indexA + relative_base
                     trim opcodes:indexA in opcodes:indexA
                     store opcodes:indexA in op1
+                    display "rel "
                 end if
                 # --- Second operand
                 in i solve i + 1
@@ -311,29 +344,34 @@ sub execute_intcode
                     store opcodes:i in indexB
                     trim opcodes:indexB in opcodes:indexB
                     store opcodes:indexB in op2
-                    #display "pos "
+                    display "pos "
                 else if mode is equal to 1 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in op2
-                    #display "imm "
+                    display "imm "
                 else if mode is equal to 2 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in indexB
                     in indexB solve indexB + relative_base
                     trim opcodes:indexB in opcodes:indexB
                     store opcodes:indexB in op2
+                    display "rel "
                 end if
+                
+                display crlf "  if " op1 " (at " indexA ") != 0 jumps to " op2 " (at " indexB ")"
                 
                 # --- Execute
                 if op1 is not equal to 0 then
                     store op2 in i
+                    display " => Jumps" crlf
                 else
                     in i solve i + 1
+                    display " => Doesn't Jump" crlf
                 end if
             
-            # JIF
+            # JUMP IF FALSE
             else if opcode_parsed is equal to "6" then        
-                #display "  JIF "
+                display "  JUMP IF FALSE "
                 # --- First operand    
                 in i solve i + 1
                 get length of par_modes in par_len
@@ -347,16 +385,19 @@ sub execute_intcode
                     store opcodes:i in indexA
                     trim opcodes:indexA in opcodes:indexA
                     store opcodes:indexA in op1
-                    #display "pos "
+                    display "pos "
                 else if mode is equal to 1 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in op1
+                    store -1 in indexA
+                    display "imm "
                 else if mode is equal to 2 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in indexA
                     in indexA solve indexA + relative_base
                     trim opcodes:indexA in opcodes:indexA
                     store opcodes:indexA in op1
+                    display "rel "
                 end if
                 # --- Second operand
                 in i solve i + 1
@@ -371,29 +412,34 @@ sub execute_intcode
                     store opcodes:i in indexB
                     trim opcodes:indexB in opcodes:indexB
                     store opcodes:indexB in op2
-                    #display "pos "
+                    display "pos "
                 else if mode is equal to 1 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in op2
-                    #display "imm "
+                    display "imm "
                 else if mode is equal to 2 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in indexb
                     in indexB solve indexB + relative_base
                     trim opcodes:indexB in opcodes:indexB
                     store opcodes:indexB in op2
+                    display "rel "
                 end if
+                
+                display crlf "  if " op1 " (at " indexA ") != 1 jumps to " op2 " (at " indexB ")"
                 
                 # --- Execute
                 if op1 is equal to 0 then
                     store op2 in i
+                    display " => Jumps" crlf
                 else
                     in i solve i + 1
+                    display " => Doesn't Jump" crlf
                 end if
                 
             # LT
             else if opcode_parsed is equal to "7" then        
-                #display "  LT "
+                display "  LT "
                 # --- First operand    
                 in i solve i + 1
                 get length of par_modes in par_len
@@ -407,16 +453,19 @@ sub execute_intcode
                     store opcodes:i in indexA
                     trim opcodes:indexA in opcodes:indexA
                     store opcodes:indexA in op1
-                    #display "pos "
+                    display "pos "
                 else if mode is equal to 1 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in op1
+                    store -1 in indexA
+                    display "imm "
                 else if mode is equal to 2 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in indexA
                     in indexA solve indexA + relative_base
                     trim opcodes:indexA in opcodes:indexA
                     store opcodes:indexA in op1
+                    display "rel "
                 end if
                 # --- Second operand
                 in i solve i + 1
@@ -431,22 +480,37 @@ sub execute_intcode
                     store opcodes:i in indexB
                     trim opcodes:indexB in opcodes:indexB
                     store opcodes:indexB in op2
-                    #display "pos "
+                    display "pos "
                 else if mode is equal to 1 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in op2
-                    #display "imm "
+                    store -1 in indexB
+                    display "imm "
                 else if mode is equal to 2 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in indexB
                     in indexB solve indexB + relative_base
                     trim opcodes:indexB in opcodes:indexB
                     store opcodes:indexB in op2
+                    display "rel "
                 end if
                 # --- Result operand
                 in i solve i + 1
-                trim opcodes:i in opcodes:i
-                store opcodes:i in indexRes
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in indexRes
+                    display "pos "
+                else if mode is equal to 2 then
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in indexRes
+                    in indexRes solve indexRes + relative_base
+                end if
                 # --- Execute
                 if op1 is less than op2 then
                     store 1 in res
@@ -455,10 +519,11 @@ sub execute_intcode
                 end if
                 store res in opcodes:indexRes
                 in i solve i + 1
+                display crlf "  " op1 " (at " indexA ") < " op2 " (at " indexB ") = " res " (at " indexRes ")" crlf
             
             # EQ
             else if opcode_parsed is equal to "8" then        
-                #display "  EQ "
+                display "  EQ "
                 # --- First operand    
                 in i solve i + 1
                 get length of par_modes in par_len
@@ -472,16 +537,19 @@ sub execute_intcode
                     store opcodes:i in indexA
                     trim opcodes:indexA in opcodes:indexA
                     store opcodes:indexA in op1
-                    #display "pos "
+                    display "pos "
                 else if mode is equal to 1 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in op1
+                    store -1 in indexA
+                    display "imm "
                 else if mode is equal to 2 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in indexA
                     in indexA solve indexA + relative_base
                     trim opcodes:indexA in opcodes:indexA
                     store opcodes:indexA in op1
+                    display "rel "
                 end if
                 # --- Second operand
                 in i solve i + 1
@@ -496,22 +564,37 @@ sub execute_intcode
                     store opcodes:i in indexB
                     trim opcodes:indexB in opcodes:indexB
                     store opcodes:indexB in op2
-                    #display "pos "
+                    display "pos "
                 else if mode is equal to 1 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in op2
-                    #display "imm "
+                    store -1 in indexB
+                    display "imm "
                 else if mode is equal to 2 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in indexB
                     in indexB solve indexB + relative_base
                     trim opcodes:indexB in opcodes:indexB
                     store opcodes:indexB in op2
+                    display "rel "
                 end if
                 # --- Result operand
                 in i solve i + 1
-                trim opcodes:i in opcodes:i
-                store opcodes:i in indexRes
+                get length of par_modes in par_len
+                store 0 in mode
+                if par_len is greater than 0 then
+                    store par_modes:0 in mode
+                    splice element 0 of list par_modes
+                end if
+                if mode is equal to 0 then
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in indexRes
+                    display "pos "
+                else if mode is equal to 2 then
+                    trim opcodes:i in opcodes:i
+                    store opcodes:i in indexRes
+                    in indexRes solve indexRes + relative_base
+                end if
                 # --- Execute
                 if op1 is equal to op2 then
                     store 1 in res
@@ -520,9 +603,11 @@ sub execute_intcode
                 end if
                 store res in opcodes:indexRes
                 in i solve i + 1
+                display crlf "  " op1 " (at " indexA ") == " op2 " (at " indexB ") = " res " (at " indexRes ")" crlf
 
             # ADJUST RELATIVE BASE
             else if opcode_parsed is equal to "9" then
+                display "  ADJUST RELATIVE BASE "
                 # --- First operand    
                 in i solve i + 1
                 get length of par_modes in par_len
@@ -536,23 +621,26 @@ sub execute_intcode
                     store opcodes:i in indexA
                     trim opcodes:indexA in opcodes:indexA
                     store opcodes:indexA in op1
-                    #display "pos "
+                    display "pos "
                 else if mode is equal to 1 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in op1
+                    display "imm "
                 else if mode is equal to 2 then
                     trim opcodes:i in opcodes:i
                     store opcodes:i in indexA
                     in indexA solve indexA + relative_base
                     trim opcodes:indexA in opcodes:indexA
                     store opcodes:indexA in op1
+                    display "off "
                 end if
                 in i solve i + 1
-                display "Changed relative base from " relative_base
-                store op1 in relative_base
-                display " to " relative_base lf
+                display crlf
+                display "  Changed relative base from " relative_base
+                in relative_base solve relative_base + op1
+                display " to " relative_base " (at " indexA ")" lf
             else
-                display "Halted." crlf
+                display "  HALTED" crlf
                 break
             end if
         repeat

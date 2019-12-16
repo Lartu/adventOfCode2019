@@ -1,0 +1,192 @@
+using package std-math
+
+data:
+input is text
+asteroids is list of lists of numbers
+best_x is number
+best_y is number
+best_count is number
+
+procedure:
+load file "input" in input
+call parse_input
+call find_best_location with best_x best_y best_count
+display "Best location is " best_x ", " best_y " (total " best_count ")" lf
+
+# --- Parses input into a matrix of asteroids ---
+sub parse_input
+    local data:
+        lines is list of text
+        tokens is list of text
+        line is text
+        token is text
+        line_number is number
+    procedure:
+        split input by "\n" in lines
+        delete last element of lines
+        for each line in lines do
+            push list to asteroids
+            split line by "" in tokens
+            for each token in tokens do
+                if token is equal to "#" then
+                    push 1 to asteroids:line_number
+                else
+                    push 0 to asteroids:line_number
+                end if
+            repeat
+            in line_number solve line_number + 1
+        repeat
+end sub
+
+# --- Checks every asteroid for the best location ---
+sub find_best_location
+    parameters:
+        best_x is number
+        best_y is number
+        best_count is number
+    local data:
+        x is number
+        y is number
+        v_ast is number # Visible asteroids
+        width is number
+        height is number
+    procedure:
+        get length of asteroids in height
+        get length of asteroids:0 in width
+        for y from 0 to height step 1 do
+            for x from 0 to width step 1 do
+                if asteroids:y:x is not equal to 0 then
+                    call count_visible_asteroids with x y v_ast
+                    if v_ast is greater than best_count then
+                        store v_ast in best_count
+                        store x in best_x
+                        store y in best_y
+                    end if
+                end if
+            repeat
+        repeat
+end sub
+
+# --- Counts how many asteroids are visible from a single asteroid ---
+sub count_visible_asteroids
+    parameters:
+        loc_x is number
+        loc_y is number
+        v_ast is number # Visible asteroids
+    local data:
+        from_x is number
+        from_y is number
+        x is number
+        y is number
+        width is number
+        height is number
+        is_visible is number
+    procedure:
+        store 0 in v_ast
+        store loc_x in from_x
+        store loc_y in from_y
+        get length of asteroids in height
+        get length of asteroids:0 in width
+        for y from 0 to height step 1 do
+            for x from 0 to width step 1 do
+                if asteroids:y:x is not equal to 0 then
+                    call is_visible_from with from_x from_y x y is_visible
+                    if is_visible is equal to 1 then
+                        in v_ast solve v_ast + 1
+                    end if
+                end if
+            repeat
+        repeat
+end sub
+
+# --- Check if an asteroid is visible from another asteroid ---
+sub is_visible_from
+    parameters:
+        from_x is number
+        from_y is number
+        to_x is number
+        to_y is number
+        is_visible is number
+    local data:
+        vector_x is number
+        vector_y is number
+        vec_mag is number
+        versor_x is number
+        versor_y is number
+        x is number
+        y is number
+        width is number
+        height is number
+        other_vector_x is number
+        other_vector_y is number
+        other_vector_mag is number
+        other_versor_x is number
+        other_versor_y is number
+    procedure:
+        # If from and to are equal, then return 0 as this case doesn't count
+        if from_x is equal to to_x and from_y is equal to to_y then
+            store 0 in is_visible
+            return
+        end if
+        # Obtain vector between both asteroids
+        in vector_x solve to_x - from_x
+        in vector_y solve to_y - from_y
+        # Obtain magnitude of the vector
+        in vec_mag solve (vector_x * vector_x) + (vector_y * vector_y)
+        find square root of vec_mag in vec_mag
+        # Obtain versor between both asteroids
+        in versor_x solve vector_x / vec_mag
+        in versor_y solve vector_y / vec_mag
+        # Now that we have versor and magnitude, check every other
+        # asteroid. If they have the same versor and less magnitude,
+        # then this asteroid is not visible from the origin asteroid.
+        get length of asteroids in height
+        get length of asteroids:0 in width
+        for y from 0 to height step 1 do
+            for x from 0 to width step 1 do
+                if asteroids:y:x is not equal to 0 then
+                    # Obtain vector between both asteroids
+                    in other_vector_x solve x - from_x
+                    in other_vector_y solve y - from_y
+                    # Obtain magnitude of the vector
+                    in other_vector_mag solve (other_vector_x * other_vector_x) + (other_vector_y * other_vector_y)
+                    find square root of other_vector_mag in other_vector_mag
+                    # Obtain versor between both asteroids
+                    in other_versor_x solve other_vector_x / other_vector_mag
+                    in other_versor_y solve other_vector_y / other_vector_mag
+                    # Check if versors are equal
+                    if other_versor_x is equal to versor_x and other_versor_y is equal to versor_y then
+                        if other_vector_mag is less than vec_mag then
+                            store 0 in is_visible
+                            return
+                        end if
+                    end if
+                end if
+            repeat
+        repeat
+        store 1 in is_visible
+        return
+end sub
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
